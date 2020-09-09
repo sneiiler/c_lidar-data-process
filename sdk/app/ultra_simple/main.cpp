@@ -109,7 +109,7 @@ int main(int argc, const char * argv[]) {
 #elif __APPLE__
         opt_com_path = "/dev/tty.SLAB_USBtoUART";
 #else
-        opt_com_path = "/dev/ttyUSB0";
+        opt_com_path = "/dev/ttyS0";
 #endif
     }
 
