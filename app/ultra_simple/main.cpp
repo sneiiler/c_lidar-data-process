@@ -281,7 +281,7 @@ int main(int argc, const char * argv[]) {
         
         writer.StartObject();               // Between StartObject()/EndObject(), 
             writer.Key("data_type");                // output a key,
-            writer.String("LIDAR-DATA-ORIGIN-DATA");             // follow by a value.
+            writer.String("L1IDAR-DATA-ORIGIN-DATA");             // follow by a value.
             writer.Key("data");
             writer.StartObject();               // Between StartObject()/EndObject(), 
                 writer.Key("serialnumber");
