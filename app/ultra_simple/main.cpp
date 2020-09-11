@@ -243,8 +243,11 @@ int main(int argc, const char * argv[]) {
 
     // print out the device serial number, firmware and hardware version number..
     printf("RPLIDAR S/N: ");
+    char serialnumber[16];
+
     for (int pos = 0; pos < 16 ;++pos) {
         printf("%02X", devinfo.serialnum[pos]);
+        sprintf(serialnumber+pos, "%02X", devinfo.serialnum[pos]);
     }
 
     printf("\n"
@@ -285,7 +288,7 @@ int main(int argc, const char * argv[]) {
             writer.Key("data");
             writer.StartObject();               // Between StartObject()/EndObject(), 
                 writer.Key("serialnumber");
-                writer.String(devinfo.serialnum);             // follow by a value.
+                writer.String(serialnumber);             // follow by a value.
                 writer.Key("content");
                 writer.StartArray();                  // Between StartArray()/EndArray(),
                     
