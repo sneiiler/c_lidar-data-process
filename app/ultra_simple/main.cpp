@@ -243,11 +243,12 @@ int main(int argc, const char * argv[]) {
 
     // print out the device serial number, firmware and hardware version number..
     printf("RPLIDAR S/N: ");
-    char serialnumber[16];
+    char serialnumber[32];
 
     for (int pos = 0; pos < 16 ;++pos) {
         printf("%02X", devinfo.serialnum[pos]);
-        sprintf(serialnumber+pos, "%02X", devinfo.serialnum[pos]);
+        // sprintf(serialnumber+pos, "%02X", devinfo.serialnum[pos]);
+        snprintf(serialnumber+2*pos, sizeof(serialnumber)-2*(pos), "%02x", devinfo.serialnum[pos]);
     }
 
     printf("\n"
