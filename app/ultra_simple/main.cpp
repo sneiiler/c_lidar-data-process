@@ -284,7 +284,9 @@ int main(int argc, const char * argv[]) {
             writer.String("LIDAR-DATA-ORIGIN-DATA");             // follow by a value.
             writer.Key("data");
             writer.StartObject();               // Between StartObject()/EndObject(), 
-                writer.Key("DEDE9AF2C1EA9FC2A2EB92F14D0D3C00");
+                writer.Key("serialnumber");
+                writer.String(devinfo.serialnum);             // follow by a value.
+                writer.Key("content");
                 writer.StartArray();                  // Between StartArray()/EndArray(),
                     
               
