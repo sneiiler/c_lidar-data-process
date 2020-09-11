@@ -104,7 +104,7 @@ int main(int argc, const char * argv[]) {
     // Our websocket object
     ix::WebSocket webSocket;
 
-    std::string url("ws://192.168.1.8:8288/");
+    std::string url("ws://192.168.43.10:8288/");
     webSocket.setUrl(url);
 
     std::cout << "Connecting to " << url << "..." << std::endl;
