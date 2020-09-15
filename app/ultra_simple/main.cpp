@@ -306,11 +306,14 @@ int main(int argc, const char * argv[]) {
                 //     nodes[pos].dist_mm_q2/4.0f,
                 //     nodes[pos].quality);
                     // webSocket.send(std::to_string(nodes[pos].dist_mm_q2/4.0f));
-                    writer.StartArray();                // Between StartArray()/EndArray(),
+                    // if( nodes[pos].quality > 0 ){
+                        writer.StartArray();                // Between StartArray()/EndArray(),
                         writer.Double(nodes[pos].angle_z_q14 * 90.f / (1 << 14));
                         writer.Double(nodes[pos].dist_mm_q2/4.0f);
                         writer.Uint(nodes[pos].quality);
-                    writer.EndArray();
+                        writer.EndArray();
+                    // }
+                    
             }
             
         
