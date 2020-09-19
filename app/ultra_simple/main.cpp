@@ -127,10 +127,12 @@ int main(int argc, const char * argv[]) {
     // Now that our callback is setup, we can start our background thread and receive messages
     webSocket.start();
 
+    std::cout << "ss1 " << std::endl;
     // Send a message to the server (default to TEXT mode)
     webSocket.send("hello world");
 
 
+    std::cout << "ss2 " << std::endl;
 
 
     const char * opt_com_path = NULL;
@@ -143,6 +145,8 @@ int main(int argc, const char * argv[]) {
     printf("Ultra simple LIDAR data grabber for RPLIDAR.\n"
            "Version: " RPLIDAR_SDK_VERSION "\n");
 
+
+    std::cout << "ss3" << std::endl;
     // read serial port from the command line...
     if (argc>1) opt_com_path = argv[1]; // or set to a fixed value: e.g. "com3" 
 
@@ -172,6 +176,8 @@ int main(int argc, const char * argv[]) {
     }
 
    
+
+    std::cout << "ss4 " << std::endl;
     rplidar_response_device_info_t devinfo;
     bool connectSuccess = false;
     // make connection...
