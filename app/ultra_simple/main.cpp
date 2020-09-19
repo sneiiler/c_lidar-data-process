@@ -96,11 +96,6 @@ void ctrlc(int)
 
 int main(int argc, const char * argv[]) {
     std::vector<RplidarScanMode> scanModes;
-
-//   // -------
-//  // Required on Windows
-//     ix::initNetSystem();
-
     // Our websocket object
     ix::WebSocket webSocket;
 
@@ -128,20 +123,216 @@ int main(int argc, const char * argv[]) {
     webSocket.start();
 
     // Send a message to the server (default to TEXT mode)
-    webSocket.send("hello world");
+    // webSocket.send("hello world");
 
+
+
+
+    const char * opt_com_path = NULL;
+    _u32         baudrateArray[2] = {115200, 256000};
+    _u32         opt_com_baudrate = 0;
+    u_result     op_result;
+
+    bool useArgcBaudrate = false;
+
+    printf("Ultra simple LIDAR data grabber for RPLIDAR.\n"
+           "Version: " RPLIDAR_SDK_VERSION "\n");
+
+    // read serial port from the command line...
+    if (argc>1) opt_com_path = argv[1]; // or set to a fixed value: e.g. "com3" 
+
+    // read baud rate from the command line if specified...
+    if (argc>2)
+    {
+        opt_com_baudrate = strtoul(argv[2], NULL, 10);
+        useArgcBaudrate = true;
+    }
+
+    if (!opt_com_path) {
+#ifdef _WIN32
+        // use default com port
+        opt_com_path = "\\\\.\\com57";
+#elif __APPLE__
+        opt_com_path = "/dev/tty.SLAB_USBtoUART";
+#else
+        opt_com_path = "/dev/ttyS1";
+#endif
+    }
+
+    // create the driver instance
+	RPlidarDriver * drv = RPlidarDriver::CreateDriver(DRIVER_TYPE_SERIALPORT);
+    if (!drv) {
+        fprintf(stderr, "insufficent memory, exit\n");
+        exit(-2);
+    }
+
+   
+    rplidar_response_device_info_t devinfo;
+    bool connectSuccess = false;
+    // make connection...
+    if(useArgcBaudrate)
+    {
+        if(!drv)
+            drv = RPlidarDriver::CreateDriver(DRIVER_TYPE_SERIALPORT);
+        if (IS_OK(drv->connect(opt_com_path, opt_com_baudrate)))
+        {
+            op_result = drv->getDeviceInfo(devinfo);
+
+            if (IS_OK(op_result)) 
+            {
+                connectSuccess = true;
+            }
+            else
+            {
+                delete drv;
+                drv = NULL;
+            }
+        }
+    }
+    else
+    {
+        size_t baudRateArraySize = (sizeof(baudrateArray))/ (sizeof(baudrateArray[0]));
+        for(size_t i = 0; i < baudRateArraySize; ++i)
+        {
+            if(!drv)
+                drv = RPlidarDriver::CreateDriver(DRIVER_TYPE_SERIALPORT);
+            if(IS_OK(drv->connect(opt_com_path, baudrateArray[i])))
+            {
+                op_result = drv->getDeviceInfo(devinfo);
+
+                if (IS_OK(op_result)) 
+                {
+                    connectSuccess = true;
+                    break;
+                }
+                else
+                {
+                    delete drv;
+                    drv = NULL;
+                }
+            }
+        }
+    }
+
+
+ // -----
+    
+   printf("modes: ");
+    drv->getAllSupportedScanModes(scanModes);
+    int count = scanModes.size();
+    for (int i = 0; i < count;i++)
+    {
+        std::cout << scanModes[i].id << std::endl;
+    }
+   printf("modes end ");
+
+    // ------
+
+
+    if (!connectSuccess) {
+        
+        fprintf(stderr, "Error, cannot bind to the specified serial port %s.\n"
+            , opt_com_path);
+        goto on_finished;
+    }
+
+    // print out the device serial number, firmware and hardware version number..
+    printf("RPLIDAR S/N: ");
+    char serialnumber[34];
+
+    for (int pos = 0; pos < 16 ;++pos) {
+        printf("%02X", devinfo.serialnum[pos]);
+        // sprintf(serialnumber+pos, "%02X", devinfo.serialnum[pos]);
+        snprintf(serialnumber+2*pos, sizeof(serialnumber)-2*(pos), "%02x", devinfo.serialnum[pos]);
+    }
+
+    printf("\n"
+            "Firmware Ver: %d.%02d\n"
+            "Hardware Rev: %d\n"
+            , devinfo.firmware_version>>8
+            , devinfo.firmware_version & 0xFF
+            , (int)devinfo.hardware_version);
+
+
+
+    // check health...
+    if (!checkRPLIDARHealth(drv)) {
+        goto on_finished;
+    }
+
+
+    signal(SIGINT, ctrlc);
+    
+    drv->startMotor();
+    // start scan...
+    drv->startScanExpress(0,3);
 
     // fetech result and print it out...
     while (1) {
-        delay(1000);
-std::cout << "Connection .....send" << std::endl;
-    webSocket.send("hello world");
+        rplidar_response_measurement_node_hq_t nodes[8192];
+        size_t   count = _countof(nodes);
+
+        op_result = drv->grabScanDataHq(nodes, count);
+
+
+        StringBuffer s;
+        Writer<StringBuffer> writer(s);
+        
+        writer.StartObject();               // Between StartObject()/EndObject(), 
+            writer.Key("data_type");                // output a key,
+            writer.String("L1IDAR-DATA-ORIGIN-DATA");             // follow by a value.
+            writer.Key("data");
+            writer.StartObject();               // Between StartObject()/EndObject(), 
+                writer.Key("serialnumber");
+                writer.String(serialnumber);             // follow by a value.
+                writer.Key("content");
+                writer.StartArray();                  // Between StartArray()/EndArray(),
+                    
+              
+
+
+
+        if (IS_OK(op_result)) {
+            drv->ascendScanData(nodes, count);
+            for (int pos = 0; pos < (int)count ; ++pos) {
+                // printf("%s theta: %03.2f Dist: %08.2f Q: %d \n", 
+                //     (nodes[pos].flag & RPLIDAR_RESP_MEASUREMENT_SYNCBIT) ?"S ":"  ", 
+                //     (nodes[pos].angle_z_q14 * 90.f / (1 << 14)), 
+                //     nodes[pos].dist_mm_q2/4.0f,
+                //     nodes[pos].quality);
+                    // webSocket.send(std::to_string(nodes[pos].dist_mm_q2/4.0f));
+                    if( nodes[pos].quality > 0 ){
+                        writer.StartArray();                // Between StartArray()/EndArray(),
+                        writer.Double(nodes[pos].angle_z_q14 * 90.f / (1 << 14));
+                        writer.Double(nodes[pos].dist_mm_q2/4.0f);
+                        writer.Uint(nodes[pos].quality);
+                        writer.EndArray();
+                    }
+                    
+            }
+            
+        
+                    writer.EndArray();
+                writer.EndObject();
+            writer.EndObject();
+
+            // {"hello":"world","t":true,"f":false,"n":null,"i":123,"pi":3.1416,"a":[0,1,2,3]}
+            // std::cout << s.GetString() << std::endl;
+            webSocket.send(s.GetString());
+            // webSocket.send(std::to_string(nodes[1].dist_mm_q2/4.0f));
+        }
+
         if (ctrl_c_pressed){ 
             break;
         }
     }
 
-   
+    drv->stop();
+    drv->stopMotor();
+    // done!
+on_finished:
+    RPlidarDriver::DisposeDriver(drv);
+    drv = NULL;
     return 0;
 }
 
