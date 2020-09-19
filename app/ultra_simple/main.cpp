@@ -224,7 +224,7 @@ int main(int argc, const char * argv[]) {
     {
         std::cout << scanModes[i].id << std::endl;
     }
-   printf("modes end ");
+   printf("modes end\n ");
 
     // ------
 
@@ -247,7 +247,7 @@ int main(int argc, const char * argv[]) {
     }
 
     printf("\n"
-            "Firmware Ver: %d.%02d\n"
+            "Firmware Ver1: %d.%02d\n"
             "Hardware Rev: %d\n"
             , devinfo.firmware_version>>8
             , devinfo.firmware_version & 0xFF
