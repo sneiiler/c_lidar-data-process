@@ -134,7 +134,8 @@ int main(int argc, const char * argv[]) {
     // fetech result and print it out...
     while (1) {
         delay(1000);
-
+std::cout << "Connection .....send" << std::endl;
+    webSocket.send("hello world");
         if (ctrl_c_pressed){ 
             break;
         }
