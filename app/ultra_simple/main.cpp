@@ -265,7 +265,7 @@ int main(int argc, const char * argv[]) {
     
     drv->startMotor();
     // start scan...
-    drv->startScanExpress(0,3);
+    drv->startScanExpress(0,2);
 
     // fetech result and print it out...
     while (1) {
