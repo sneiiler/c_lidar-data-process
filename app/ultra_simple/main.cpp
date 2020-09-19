@@ -133,7 +133,7 @@ int main(int argc, const char * argv[]) {
 
     // fetech result and print it out...
     while (1) {
-        Sleep(1000);
+        delay(1000);
 
         if (ctrl_c_pressed){ 
             break;
